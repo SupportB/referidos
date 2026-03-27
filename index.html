@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Formulario de Referidos</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --blue: #0077b6;
+  --blue-light: #e8f6ff;
+  --blue-mid: #cce9f8;
+  --green: #22c55e;
+  --red: #dc2626;
+  --gray: #f0f4f8;
+  --border: #d1dde8;
+  --text: #1a2535;
+  --muted: #64748b;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'IBM Plex Sans', Arial, sans-serif;
+  background: var(--gray);
+  color: var(--text);
+  padding: 24px 16px 60px;
+  min-height: 100vh;
+}
+form {
+  max-width: 660px;
+  margin: auto;
+  background: #fff;
+  padding: 32px 28px;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.09);
+}
+h2 { text-align: center; color: var(--blue); font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+.subtitle { text-align: center; color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+
+.section-divider {
+  margin: 24px 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+.section-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+label { display: block; margin-top: 14px; font-size: 13px; font-weight: 600; color: var(--text); }
+label span.req { color: var(--red); margin-left: 2px; }
+
+input[type=text], input[type=tel], select {
+  width: 100%;
+  padding: 10px 13px;
+  margin-top: 5px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  font-size: 15px;
+  font-family: inherit;
+  background: #fafdff;
+  color: var(--text);
+  transition: border-color 0.2s;
+}
+input:focus, select:focus { outline: none; border-color: var(--blue); background: #fff; }
+.row { display: flex; gap: 12px; }
+.row > * { flex: 1; min-width: 0; }
+
+/* ── AUTOCOMPLETE ── */
+.autocomplete-wrap { position: relative; margin-top: 5px; }
+.autocomplete-wrap input { margin-top: 0; }
+.autocomplete-list {
+  position: absolute;
+  z-index: 999;
+  width: 100%;
+  background: #fff;
+  border: 1.5px solid var(--blue);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+  display: none;
+}
+.autocomplete-list.open { display: block; }
+.autocomplete-item {
+  padding: 10px 13px;
+  font-size: 14px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--gray);
+  color: var(--text);
+  transition: background 0.12s;
+}
+.autocomplete-item:last-child { border-bottom: none; }
+.autocomplete-item:hover, .autocomplete-item.active { background: var(--blue-light); color: var(--blue); }
+.autocomplete-item em { font-style: normal; font-weight: 700; color: var(--blue); }
+.autocomplete-empty { padding: 10px 13px; font-size: 13px; color: var(--muted); font-style: italic; }
+.autocomplete-loading { padding: 10px 13px; font-size: 13px; color: var(--muted); }
+
+#botonEnviar {
+  width: 100%;
+  margin-top: 26px;
+  padding: 14px;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+#botonEnviar:hover { background: #005f8e; }
+#botonEnviar:active { transform: scale(0.98); }
+#botonEnviar:disabled { opacity: 0.55; cursor: not-allowed; }
+
+#status { margin-top: 14px; font-weight: 700; text-align: center; font-size: 14px; min-height: 20px; }
+#status.ok   { color: var(--green); }
+#status.err  { color: var(--red); }
+#status.info { color: var(--muted); }
+
+#folioBox {
+  display: none;
+  margin-top: 20px;
+  padding: 18px;
+  border-radius: 12px;
+  background: linear-gradient(120deg, var(--blue-light), #f0faff);
+  border: 1.5px solid var(--blue-mid);
+  text-align: center;
+}
+#folioBox h3 { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+#folioValue { font-size: 28px; font-weight: 900; letter-spacing: 2px; color: var(--blue); margin-bottom: 12px; }
+.folio-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.btn-ghost {
+  background: transparent;
+  color: var(--blue);
+  border: 1.5px solid var(--blue);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-ghost:hover { background: var(--blue-light); }
+
+/* ── INE UPLOAD ── */
+.ine-section {
+  margin-top: 18px;
+  padding: 18px;
+  background: #f7fafd;
+  border: 1.5px dashed var(--border);
+  border-radius: 12px;
+}
+.ine-section-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+.ine-section-title .badge { background: var(--blue); color: #fff; font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 700; }
+.ine-slots { display: flex; gap: 12px; }
+.ine-slot { flex: 1; }
+.ine-slot label { font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 0; margin-bottom: 6px; }
+.drop-zone {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/10;
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  overflow: hidden;
+}
+.drop-zone:hover, .drop-zone.dragover { border-color: var(--blue); background: var(--blue-light); }
+.drop-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.drop-zone .dz-icon { font-size: 28px; margin-bottom: 4px; }
+.drop-zone .dz-label { font-size: 12px; color: var(--muted); text-align: center; padding: 0 8px; font-weight: 600; }
+.drop-zone .dz-hint { font-size: 10px; color: #94a3b8; margin-top: 2px; }
+.drop-zone .preview-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 8px; display: none; }
+.drop-zone.has-file .preview-img { display: block; }
+.drop-zone.has-file .dz-icon,
+.drop-zone.has-file .dz-label,
+.drop-zone.has-file .dz-hint { display: none; }
+.drop-zone .clear-btn {
+  display: none;
+  position: absolute;
+  top: 6px; right: 6px;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 22px; height: 22px;
+  font-size: 13px;
+  line-height: 22px;
+  text-align: center;
+  cursor: pointer;
+  z-index: 2;
+  padding: 0;
+}
+.drop-zone.has-file .clear-btn { display: block; }
+.ine-status { margin-top: 8px; font-size: 12px; font-weight: 600; text-align: center; min-height: 16px; }
+.ine-status.ok   { color: var(--green); }
+.ine-status.warn { color: #f59e0b; }
+.ine-status.err  { color: var(--red); }
+
+#uploadProgress { display: none; margin-top: 12px; }
+#uploadProgress .prog-label { font-size: 13px; font-weight: 700; margin-bottom: 5px; color: var(--muted); }
+#uploadTrack { background: #e5e7eb; height: 10px; border-radius: 8px; overflow: hidden; }
+#uploadBar { width: 0%; height: 100%; background: var(--green); transition: width 0.2s; }
+#uploadPct { font-size: 11px; margin-top: 3px; color: var(--muted); }
+
+#cargandoCatalogos {
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  padding: 8px 0 4px;
+}
+</style>
+</head>
+<body>
+
+<form id="formReferidos" onsubmit="return false;">
+
+  <h2>🤝 Formulario de Referidos</h2>
+  <p class="subtitle">Completa los datos y adjunta el INE del referido por ambos lados</p>
+  <div id="cargandoCatalogos">⏳ Cargando catálogos…</div>
+
+  <!-- QUIEN REFIERE -->
+  <div class="section-divider">Quien refiere</div>
+  <label>👤 Nombre completo de quien refiere <span class="req">*</span></label>
+  <input type="text" id="nombreRefiere" placeholder="Nombre completo" required>
+
+  <!-- REFERIDO -->
+  <div class="section-divider">Datos del referido</div>
+  <label>👤 Nombre completo del referido <span class="req">*</span></label>
+  <input type="text" id="nombreReferido" placeholder="Nombre completo" required>
+
+  <div class="row">
+    <div>
+      <label>📞 Teléfono del referido 1 <span class="req">*</span></label>
+      <input type="tel" id="telefono1" placeholder="10 dígitos" required>
+    </div>
+    <div>
+      <label>📞 Teléfono del referido 2</label>
+      <input type="tel" id="telefono2" placeholder="Opcional">
+    </div>
+  </div>
+
+  <!-- INE -->
+  <div class="section-divider">Identificación del referido</div>
+  <div class="ine-section">
+    <div class="ine-section-title">
+      🪪 INE del referido <span class="badge">Requerido</span>
+    </div>
+    <div class="ine-slots">
+      <div class="ine-slot">
+        <label>Frente (lado con foto)</label>
+        <div class="drop-zone" id="dzFrente">
+          <input type="file" id="ineFrente" accept="image/*" capture="environment">
+          <img class="preview-img" id="prevFrente" alt="Vista previa frente INE">
+          <button class="clear-btn" type="button" data-target="ineFrente" data-prev="prevFrente" data-dz="dzFrente">✕</button>
+          <div class="dz-icon">📷</div>
+          <div class="dz-label">Frente del INE</div>
+          <div class="dz-hint">Toca o arrastra</div>
+        </div>
+        <div class="ine-status warn" id="stFrente">Sin foto</div>
+      </div>
+      <div class="ine-slot">
+        <label>Reverso (lado con código)</label>
+        <div class="drop-zone" id="dzReverso">
+          <input type="file" id="ineReverso" accept="image/*" capture="environment">
+          <img class="preview-img" id="prevReverso" alt="Vista previa reverso INE">
+          <button class="clear-btn" type="button" data-target="ineReverso" data-prev="prevReverso" data-dz="dzReverso">✕</button>
+          <div class="dz-icon">📷</div>
+          <div class="dz-label">Reverso del INE</div>
+          <div class="dz-hint">Toca o arrastra</div>
+        </div>
+        <div class="ine-status warn" id="stReverso">Sin foto</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- UBICACIÓN -->
+  <div class="section-divider">Ubicación</div>
+  <div class="row">
+    <div>
+      <label>🗺️ Estado</label>
+      <select id="estado">
+        <option value="">— Selecciona —</option>
+        <option>Aguascalientes</option><option>Baja California</option><option>Baja California Sur</option>
+        <option>Campeche</option><option>Chiapas</option><option>Chihuahua</option>
+        <option>Ciudad de México</option><option>Coahuila</option><option>Colima</option>
+        <option>Durango</option><option>Estado de México</option><option>Guanajuato</option>
+        <option>Guerrero</option><option>Hidalgo</option><option>Jalisco</option>
+        <option>Michoacán</option><option>Morelos</option><option>Nayarit</option>
+        <option>Nuevo León</option><option>Oaxaca</option><option>Puebla</option>
+        <option>Querétaro</option><option>Quintana Roo</option><option>San Luis Potosí</option>
+        <option>Sinaloa</option><option>Sonora</option><option>Tabasco</option>
+        <option>Tamaulipas</option><option>Tlaxcala</option><option>Veracruz</option>
+        <option>Yucatán</option><option>Zacatecas</option>
+      </select>
+    </div>
+    <div>
+      <label>🏙️ Ciudad / Municipio</label>
+      <input type="text" id="ciudadMunicipio" placeholder="Ciudad o municipio">
+    </div>
+  </div>
+
+  <!-- VACANTE -->
+  <div class="section-divider">Detalles de la vacante</div>
+
+  <label>🏢 Sucursal ofrecida para tu referido <span class="req">*</span></label>
+  <div class="autocomplete-wrap">
+    <input type="text" id="sucursal" placeholder="Escribe para buscar tienda…" autocomplete="off" required>
+    <div class="autocomplete-list" id="listSucursal">
+      <div class="autocomplete-loading">Cargando tiendas…</div>
+    </div>
+  </div>
+
+  <label>💼 Puesto ofrecido <span class="req">*</span></label>
+  <div class="autocomplete-wrap">
+    <input type="text" id="puesto" placeholder="Escribe para buscar puesto…" autocomplete="off" required>
+    <div class="autocomplete-list" id="listPuesto">
+      <div class="autocomplete-loading">Cargando puestos…</div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>📆 Periodicidad de pago ofrecida</label>
+      <select id="periodicidad">
+        <option value="">— Selecciona —</option>
+        <option>Semanal</option>
+        <option>Quincenal</option>
+        <option>Pago por pedido</option>
+      </select>
+    </div>
+    <div>
+      <label>💰 Esquema de pago ofrecido</label>
+      <select id="esquema">
+        <option value="">— Selecciona —</option>
+        <option>Sueldos y Salarios</option>
+        <option>Mixto</option>
+        <option>Aliado interno</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="uploadProgress">
+    <div class="prog-label">Subiendo evidencias, espera un momento…</div>
+    <div id="uploadTrack"><div id="uploadBar"></div></div>
+    <div id="uploadPct">0%</div>
+  </div>
+
+  <button id="botonEnviar" type="button">📤 Generar folio y guardar</button>
+
+  <div id="status"></div>
+
+  <div id="folioBox">
+    <h3>Folio asignado</h3>
+    <div id="folioValue">FOL-0000</div>
+    <div class="folio-actions">
+      <button id="btnCopiarFolio" class="btn-ghost" type="button">📋 Copiar folio</button>
+      <button id="btnAbrirWhatsApp" class="btn-ghost" type="button">💬 Enviar por WhatsApp</button>
+    </div>
+    <div style="margin-top:10px;font-size:12px;color:var(--muted)">
+      Anota este folio para seguimiento — se guardó en la hoja.
+    </div>
+  </div>
+
+</form>
+
+<script>
+// ── REEMPLAZA CON TU URL DE WEB APP ──────────────────────────────
+const GOOGLE_WEBAPP = "https://script.google.com/macros/s/AKfycbys7qARtjuBASTk5IVfcFxin_kf2LgvnXi4kk5OSIyEkTO9pWCAwokngb6QPjPx6VZe/exec";
+// ─────────────────────────────────────────────────────────────────
+
+/* ══════════════════════════════════════════════
+   AUTOCOMPLETADO GENÉRICO
+   ══════════════════════════════════════════════ */
+function crearAutocompletado(inputId, listId, datos) {
+  const input   = document.getElementById(inputId);
+  const lista   = document.getElementById(listId);
+  let idxActivo = -1;
+
+  function resaltar(texto, query) {
+    if (!query) return texto;
+    const re = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    return texto.replace(re, '<em>$1</em>');
+  }
+
+  function mostrar(query) {
+    const q        = query.trim().toLowerCase();
+    const filtrados = q ? datos.filter(d => d.toLowerCase().includes(q)) : datos;
+    lista.innerHTML = '';
+    idxActivo = -1;
+    if (filtrados.length === 0) {
+      lista.innerHTML = '<div class="autocomplete-empty">Sin resultados</div>';
+    } else {
+      filtrados.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'autocomplete-item';
+        div.innerHTML = resaltar(item, query.trim());
+        div.addEventListener('mousedown', e => {
+          e.preventDefault();
+          input.value = item;
+          cerrar();
+        });
+        lista.appendChild(div);
+      });
+    }
+    lista.classList.add('open');
+  }
+
+  function cerrar() { lista.classList.remove('open'); idxActivo = -1; }
+
+  input.addEventListener('focus', () => mostrar(input.value));
+  input.addEventListener('input', () => mostrar(input.value));
+  input.addEventListener('blur',  () => setTimeout(cerrar, 150));
+
+  input.addEventListener('keydown', e => {
+    const items = lista.querySelectorAll('.autocomplete-item');
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      idxActivo = Math.min(idxActivo + 1, items.length - 1);
+      items.forEach((el, i) => el.classList.toggle('active', i === idxActivo));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      idxActivo = Math.max(idxActivo - 1, 0);
+      items.forEach((el, i) => el.classList.toggle('active', i === idxActivo));
+    } else if (e.key === 'Enter' && idxActivo >= 0) {
+      e.preventDefault();
+      input.value = items[idxActivo].textContent;
+      cerrar();
+    } else if (e.key === 'Escape') {
+      cerrar();
+    }
+  });
+
+  document.addEventListener('click', e => {
+    if (!input.contains(e.target) && !lista.contains(e.target)) cerrar();
+  });
+}
+
+/* ══════════════════════════════════════════════
+   CARGAR CATÁLOGOS CON JSONP (sin CORS)
+   ══════════════════════════════════════════════ */
+function cargarCatalogos() {
+  const callbackName = 'jsonpCallback_' + Date.now();
+
+  window[callbackName] = function(data) {
+    document.getElementById('cargandoCatalogos').style.display = 'none';
+    if (data.status === 'success') {
+      crearAutocompletado('sucursal', 'listSucursal', data.tiendas);
+      crearAutocompletado('puesto',   'listPuesto',   data.puestos);
+      document.getElementById('listSucursal').innerHTML = '';
+      document.getElementById('listPuesto').innerHTML   = '';
+    } else {
+      document.getElementById('cargandoCatalogos').textContent = '⚠️ Error al cargar catálogos. Escribe manualmente.';
+      document.getElementById('cargandoCatalogos').style.display = 'block';
+    }
+    // Limpiar script y callback
+    delete window[callbackName];
+    const s = document.getElementById('jsonpScript');
+    if (s) s.remove();
+  };
+
+  const script = document.createElement('script');
+  script.id  = 'jsonpScript';
+  script.src = GOOGLE_WEBAPP + '?callback=' + callbackName;
+  script.onerror = function() {
+    document.getElementById('cargandoCatalogos').textContent = '⚠️ No se pudieron cargar los catálogos. Escribe manualmente.';
+    document.getElementById('listSucursal').innerHTML = '';
+    document.getElementById('listPuesto').innerHTML   = '';
+    delete window[callbackName];
+  };
+  document.body.appendChild(script);
+}
+
+cargarCatalogos();
+
+/* ══════════════════════════════════════════════
+   DROP ZONES — INE
+   ══════════════════════════════════════════════ */
+function setupDropZone(inputId, previewId, dzId, statusId) {
+  const input = document.getElementById(inputId);
+  const prev  = document.getElementById(previewId);
+  const dz    = document.getElementById(dzId);
+  const st    = document.getElementById(statusId);
+
+  function loadFile(file) {
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      prev.src = e.target.result;
+      dz.classList.add('has-file');
+      st.textContent = '✅ Foto cargada';
+      st.className = 'ine-status ok';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  input.addEventListener('change', () => loadFile(input.files[0]));
+  dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault();
+    dz.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file) { input.files = e.dataTransfer.files; loadFile(file); }
+  });
+}
+
+setupDropZone('ineFrente',  'prevFrente',  'dzFrente',  'stFrente');
+setupDropZone('ineReverso', 'prevReverso', 'dzReverso', 'stReverso');
+
+document.querySelectorAll('.clear-btn').forEach(btn => {
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const input = document.getElementById(btn.dataset.target);
+    const prev  = document.getElementById(btn.dataset.prev);
+    const dz    = document.getElementById(btn.dataset.dz);
+    const stId  = dz.id === 'dzFrente' ? 'stFrente' : 'stReverso';
+    const st    = document.getElementById(stId);
+    input.value = '';
+    prev.src = '';
+    dz.classList.remove('has-file');
+    st.textContent = 'Sin foto';
+    st.className = 'ine-status warn';
+  });
+});
+
+/* ══════════════════════════════════════════════
+   HELPERS
+   ══════════════════════════════════════════════ */
+function vCampo(id) { return document.getElementById(id).value.trim(); }
+
+function toBase64(file) {
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onload  = () => res(fr.result);
+    fr.onerror = rej;
+    fr.readAsDataURL(file);
+  });
+}
+
+function construirResumen(d) {
+  return `Hola Joins Us 👋 *${d.nombre_refiere}* acaba de referir a: *${d.nombre_referido}* que vive en *${d.estado}${d.ciudad_municipio ? ', ' + d.ciudad_municipio : ''}*. Se está refiriendo para *${d.sucursal}* como *${d.puesto}* Periocidad *${d.periodicidad}* Y esquema *${d.esquema}*, favor de llarmarle al *${d.telefono1}* o al *${d.telefono2}* Su folio de referido es *${d.folio}* 🧾`;
+}
+
+/* ══════════════════════════════════════════════
+   ENVÍO — POST con fetch (no-cors no devuelve respuesta,
+   así que usamos fetch normal pero con redirect:follow
+   que Google Apps Script maneja correctamente)
+   ══════════════════════════════════════════════ */
+const btnEnviar  = document.getElementById('botonEnviar');
+const statusEl   = document.getElementById('status');
+const folioBox   = document.getElementById('folioBox');
+const folioValue = document.getElementById('folioValue');
+
+btnEnviar.onclick = async function () {
+  const frenteFile  = document.getElementById('ineFrente').files[0];
+  const reversoFile = document.getElementById('ineReverso').files[0];
+
+  // Validaciones
+  if (!vCampo('nombreRefiere')) {
+    statusEl.className = 'err';
+    statusEl.textContent = '❌ Falta el nombre de quien refiere.';
+    return;
+  }
+  if (!vCampo('nombreReferido')) {
+    statusEl.className = 'err';
+    statusEl.textContent = '❌ Falta el nombre del referido.';
+    return;
+  }
+  if (!vCampo('telefono1')) {
+    statusEl.className = 'err';
+    statusEl.textContent = '❌ Falta el teléfono del referido.';
+    return;
+  }
+  if (!frenteFile) {
+    document.getElementById('stFrente').textContent = '⚠️ Requerido';
+    document.getElementById('stFrente').className = 'ine-status err';
+    statusEl.className = 'err';
+    statusEl.textContent = '❌ Falta el frente del INE del referido.';
+    return;
+  }
+  if (!reversoFile) {
+    document.getElementById('stReverso').textContent = '⚠️ Requerido';
+    document.getElementById('stReverso').className = 'ine-status err';
+    statusEl.className = 'err';
+    statusEl.textContent = '❌ Falta el reverso del INE del referido.';
+    return;
+  }
+  if (!vCampo('sucursal')) {
+    statusEl.className = 'err';
+    statusEl.textContent = '❌ Falta la sucursal ofrecida.';
+    return;
+  }
+  if (!vCampo('puesto')) {
+    statusEl.className = 'err';
+    statusEl.textContent = '❌ Falta el puesto ofrecido.';
+    return;
+  }
+
+  btnEnviar.disabled = true;
+  statusEl.className = 'info';
+  statusEl.textContent = 'Preparando imágenes del INE…';
+
+  const archivos = [frenteFile, reversoFile];
+  const prog = document.getElementById('uploadProgress');
+  const bar  = document.getElementById('uploadBar');
+  const pct  = document.getElementById('uploadPct');
+  prog.style.display = 'block';
+
+  const evidencias = [];
+  for (let i = 0; i < archivos.length; i++) {
+    const b64 = await toBase64(archivos[i]);
+    evidencias.push({
+      data:     b64.split(',')[1],
+      tipo:     archivos[i].type,
+      etiqueta: i === 0 ? 'INE_frente' : 'INE_reverso'
+    });
+    const p = Math.round(((i + 1) / archivos.length) * 100);
+    bar.style.width  = p + '%';
+    pct.textContent  = p + '%';
+  }
+
+  statusEl.textContent = 'Guardando información…';
+
+  try {
+    const datos = {
+      nombre_refiere:   vCampo('nombreRefiere'),
+      nombre_referido:  vCampo('nombreReferido'),
+      telefono1:        vCampo('telefono1'),
+      telefono2:        vCampo('telefono2'),
+      estado:           vCampo('estado'),
+      ciudad_municipio: vCampo('ciudadMunicipio'),
+      sucursal:         vCampo('sucursal'),
+      puesto:           vCampo('puesto'),
+      periodicidad:     vCampo('periodicidad'),
+      esquema:          vCampo('esquema'),
+      evidencias:       evidencias
+    };
+
+    // Usamos no-cors para el POST — Google Apps Script redirige
+    // y el navegador sigue la redirección sin bloquear
+    const r = await fetch(GOOGLE_WEBAPP, {
+      method:   'POST',
+      redirect: 'follow',
+      body:     JSON.stringify(datos)
+    });
+
+    const j = await r.json();
+    if (j.status !== 'success') throw new Error(j.mensaje || 'Error del servidor');
+
+    const folioFmt = 'FOL-' + String(j.folio).padStart(4, '0');
+    folioValue.textContent      = folioFmt;
+    folioBox.style.display      = 'block';
+
+    const resumen = construirResumen({ ...datos, folio: folioFmt });
+
+    document.getElementById('btnCopiarFolio').onclick = () => {
+      navigator.clipboard.writeText(folioFmt).then(() => alert('✅ Folio copiado al portapapeles'));
+    };
+    document.getElementById('btnAbrirWhatsApp').onclick = () => {
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(resumen)}`, '_blank');
+    };
+
+    // Abrir WhatsApp automáticamente
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(resumen)}`, '_blank');
+
+    statusEl.className   = 'ok';
+    statusEl.textContent = '✅ Guardado correctamente';
+
+  } catch (err) {
+    console.error(err);
+    statusEl.className   = 'err';
+    statusEl.textContent = '❌ Error al enviar. Verifica tu conexión e intenta de nuevo.';
+    btnEnviar.disabled   = false;
+  }
+};
+</script>
+</body>
+</html>
