@@ -262,24 +262,26 @@ input:focus, select:focus { outline: none; border-color: var(--blue); background
       <div class="ine-slot">
         <label>Frente (lado con foto)</label>
         <div class="drop-zone" id="dzFrente">
-          <input type="file" id="ineFrente" accept="image/*" capture="environment">
+          <!-- SIN capture="environment" → el celular pregunta: cámara o galería -->
+          <input type="file" id="ineFrente" accept="image/*">
           <img class="preview-img" id="prevFrente" alt="Vista previa frente INE">
           <button class="clear-btn" type="button" data-target="ineFrente" data-prev="prevFrente" data-dz="dzFrente">✕</button>
           <div class="dz-icon">📷</div>
           <div class="dz-label">Frente del INE</div>
-          <div class="dz-hint">Toca o arrastra</div>
+          <div class="dz-hint">Toca para foto o galería · Arrastra aquí</div>
         </div>
         <div class="ine-status warn" id="stFrente">Sin foto</div>
       </div>
       <div class="ine-slot">
         <label>Reverso (lado con código)</label>
         <div class="drop-zone" id="dzReverso">
-          <input type="file" id="ineReverso" accept="image/*" capture="environment">
+          <!-- SIN capture="environment" → el celular pregunta: cámara o galería -->
+          <input type="file" id="ineReverso" accept="image/*">
           <img class="preview-img" id="prevReverso" alt="Vista previa reverso INE">
           <button class="clear-btn" type="button" data-target="ineReverso" data-prev="prevReverso" data-dz="dzReverso">✕</button>
           <div class="dz-icon">📷</div>
           <div class="dz-label">Reverso del INE</div>
-          <div class="dz-hint">Toca o arrastra</div>
+          <div class="dz-hint">Toca para foto o galería · Arrastra aquí</div>
         </div>
         <div class="ine-status warn" id="stReverso">Sin foto</div>
       </div>
@@ -465,7 +467,6 @@ function cargarCatalogos() {
       document.getElementById('cargandoCatalogos').textContent = '⚠️ Error al cargar catálogos. Escribe manualmente.';
       document.getElementById('cargandoCatalogos').style.display = 'block';
     }
-    // Limpiar script y callback
     delete window[callbackName];
     const s = document.getElementById('jsonpScript');
     if (s) s.remove();
@@ -551,13 +552,11 @@ function toBase64(file) {
 }
 
 function construirResumen(d) {
-  return `Hola Joins Us 👋 *${d.nombre_refiere}* acaba de referir a: *${d.nombre_referido}* que vive en *${d.estado}${d.ciudad_municipio ? ', ' + d.ciudad_municipio : ''}*. Se está refiriendo para *${d.sucursal}* como *${d.puesto}* Periocidad *${d.periodicidad}* Y esquema *${d.esquema}*, favor de llarmarle al *${d.telefono1}* o al *${d.telefono2}* Su folio de referido es *${d.folio}* 🧾`;
+  return `Hola Joins Us 👋 *${d.nombre_refiere}* acaba de referir a: *${d.nombre_referido}* que vive en *${d.estado}${d.ciudad_municipio ? ', ' + d.ciudad_municipio : ''}*. Se está refiriendo para *${d.sucursal}* como *${d.puesto}* Periodicidad *${d.periodicidad}* y esquema *${d.esquema}*, favor de llamarle al *${d.telefono1}*${d.telefono2 ? ' o al *' + d.telefono2 + '*' : ''}. Su folio de referido es *${d.folio}* 🧾`;
 }
 
 /* ══════════════════════════════════════════════
-   ENVÍO — POST con fetch (no-cors no devuelve respuesta,
-   así que usamos fetch normal pero con redirect:follow
-   que Google Apps Script maneja correctamente)
+   ENVÍO
    ══════════════════════════════════════════════ */
 const btnEnviar  = document.getElementById('botonEnviar');
 const statusEl   = document.getElementById('status');
@@ -568,46 +567,21 @@ btnEnviar.onclick = async function () {
   const frenteFile  = document.getElementById('ineFrente').files[0];
   const reversoFile = document.getElementById('ineReverso').files[0];
 
-  // Validaciones
-  if (!vCampo('nombreRefiere')) {
-    statusEl.className = 'err';
-    statusEl.textContent = '❌ Falta el nombre de quien refiere.';
-    return;
-  }
-  if (!vCampo('nombreReferido')) {
-    statusEl.className = 'err';
-    statusEl.textContent = '❌ Falta el nombre del referido.';
-    return;
-  }
-  if (!vCampo('telefono1')) {
-    statusEl.className = 'err';
-    statusEl.textContent = '❌ Falta el teléfono del referido.';
-    return;
-  }
+  if (!vCampo('nombreRefiere')) { statusEl.className = 'err'; statusEl.textContent = '❌ Falta el nombre de quien refiere.'; return; }
+  if (!vCampo('nombreReferido')) { statusEl.className = 'err'; statusEl.textContent = '❌ Falta el nombre del referido.'; return; }
+  if (!vCampo('telefono1')) { statusEl.className = 'err'; statusEl.textContent = '❌ Falta el teléfono del referido.'; return; }
   if (!frenteFile) {
     document.getElementById('stFrente').textContent = '⚠️ Requerido';
     document.getElementById('stFrente').className = 'ine-status err';
-    statusEl.className = 'err';
-    statusEl.textContent = '❌ Falta el frente del INE del referido.';
-    return;
+    statusEl.className = 'err'; statusEl.textContent = '❌ Falta el frente del INE del referido.'; return;
   }
   if (!reversoFile) {
     document.getElementById('stReverso').textContent = '⚠️ Requerido';
     document.getElementById('stReverso').className = 'ine-status err';
-    statusEl.className = 'err';
-    statusEl.textContent = '❌ Falta el reverso del INE del referido.';
-    return;
+    statusEl.className = 'err'; statusEl.textContent = '❌ Falta el reverso del INE del referido.'; return;
   }
-  if (!vCampo('sucursal')) {
-    statusEl.className = 'err';
-    statusEl.textContent = '❌ Falta la sucursal ofrecida.';
-    return;
-  }
-  if (!vCampo('puesto')) {
-    statusEl.className = 'err';
-    statusEl.textContent = '❌ Falta el puesto ofrecido.';
-    return;
-  }
+  if (!vCampo('sucursal')) { statusEl.className = 'err'; statusEl.textContent = '❌ Falta la sucursal ofrecida.'; return; }
+  if (!vCampo('puesto'))   { statusEl.className = 'err'; statusEl.textContent = '❌ Falta el puesto ofrecido.'; return; }
 
   btnEnviar.disabled = true;
   statusEl.className = 'info';
@@ -628,8 +602,8 @@ btnEnviar.onclick = async function () {
       etiqueta: i === 0 ? 'INE_frente' : 'INE_reverso'
     });
     const p = Math.round(((i + 1) / archivos.length) * 100);
-    bar.style.width  = p + '%';
-    pct.textContent  = p + '%';
+    bar.style.width = p + '%';
+    pct.textContent = p + '%';
   }
 
   statusEl.textContent = 'Guardando información…';
@@ -649,8 +623,6 @@ btnEnviar.onclick = async function () {
       evidencias:       evidencias
     };
 
-    // Usamos no-cors para el POST — Google Apps Script redirige
-    // y el navegador sigue la redirección sin bloquear
     const r = await fetch(GOOGLE_WEBAPP, {
       method:   'POST',
       redirect: 'follow',
@@ -661,8 +633,8 @@ btnEnviar.onclick = async function () {
     if (j.status !== 'success') throw new Error(j.mensaje || 'Error del servidor');
 
     const folioFmt = 'FOL-' + String(j.folio).padStart(4, '0');
-    folioValue.textContent      = folioFmt;
-    folioBox.style.display      = 'block';
+    folioValue.textContent = folioFmt;
+    folioBox.style.display = 'block';
 
     const resumen = construirResumen({ ...datos, folio: folioFmt });
 
@@ -673,7 +645,6 @@ btnEnviar.onclick = async function () {
       window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(resumen)}`, '_blank');
     };
 
-    // Abrir WhatsApp automáticamente
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(resumen)}`, '_blank');
 
     statusEl.className   = 'ok';
