@@ -231,7 +231,7 @@ input:focus, select:focus { outline: none; border-color: var(--blue); background
 <form id="formReferidos" onsubmit="return false;">
 
   <h2>🤝 Formulario de Referidos</h2>
-  <p class="subtitle">Completa los datos y adjunta el INE del referido por ambos lados</p>
+  <p class="subtitle">Completa los datos y adjunta los documentos solocitados del referido</p>
   <div id="cargandoCatalogos">⏳ Cargando catálogos…</div>
 
   <!-- QUIEN REFIERE -->
@@ -351,27 +351,6 @@ input:focus, select:focus { outline: none; border-color: var(--blue); background
     </div>
   </div>
 
-  <div class="row">
-    <div>
-      <label>📆 Periodicidad de pago ofrecida</label>
-      <select id="periodicidad">
-        <option value="">— Selecciona —</option>
-        <option>Semanal</option>
-        <option>Quincenal</option>
-        <option>Pago por pedido</option>
-      </select>
-    </div>
-    <div>
-      <label>💰 Esquema de pago ofrecido</label>
-      <select id="esquema">
-        <option value="">— Selecciona —</option>
-        <option>Sueldos y Salarios</option>
-        <option>Mixto</option>
-        <option>Aliado interno</option>
-      </select>
-    </div>
-  </div>
-
   <div id="uploadProgress">
     <div class="prog-label">Subiendo evidencias, espera un momento…</div>
     <div id="uploadTrack"><div id="uploadBar"></div></div>
@@ -398,7 +377,7 @@ input:focus, select:focus { outline: none; border-color: var(--blue); background
 
 <script>
 // ── URL DE WEB APP ──────────────────────────────────────────────
-const GOOGLE_WEBAPP = "https://script.google.com/macros/s/AKfycbwE_XhGDT57Pb1hiYYkMUolZZg4A07_bsLPuRgG9yCKqfnzbg029x-DTKyZCEgJXqkr/exec";
+const GOOGLE_WEBAPP = "https://script.google.com/macros/s/AKfycbwtLhbLgmQjPZYWGjBpCwU1uDRSMrJ2_4XHkJqbPvdKQnCXsXlw0Yo2bLMbCfVhlNvN/exec";
 // ───────────────────────────────────────────────────────────────
 
 /* ══════════════════════════════════════════════
@@ -563,17 +542,15 @@ ${linea}
    Nombre:      ${d.nombre_referido}
    📞 Tel 1:    ${d.telefono1}${d.telefono2 ? '\n   📞 Tel 2:    ' + d.telefono2 : ''}
 
-📍 UBICACIÓN
+📍 UBICACIÓN DEL REFERIDO
    Estado:      ${d.estado || 'N/A'}
    Ciudad:      ${d.ciudad_municipio || 'N/A'}
 
-💼 VACANTE
+💼 VACANTE OFRECIDA
    Sucursal:    ${d.sucursal}
    Puesto:      ${d.puesto}
-   Periodicidad:${d.periodicidad || 'N/A'}
-   Esquema:     ${d.esquema || 'N/A'}
 ${linea}
-📸 Evidencias: INE frente, INE reverso, Número de cuenta
+📸 Documentos: INE frente, INE reverso, Número de cuenta
 ✅ Registrado en Google Sheets`
   );
 }
@@ -642,8 +619,6 @@ btnEnviar.onclick = async function () {
       ciudad_municipio: vCampo('ciudadMunicipio'),
       sucursal:         vCampo('sucursal'),
       puesto:           vCampo('puesto'),
-      periodicidad:     vCampo('periodicidad'),
-      esquema:          vCampo('esquema'),
       evidencias:       evidencias
     };
 
