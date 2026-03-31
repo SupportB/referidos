@@ -149,7 +149,7 @@ input:focus, select:focus { outline: none; border-color: var(--blue); background
 }
 .btn-ghost:hover { background: var(--blue-light); }
 
-/* ── INE UPLOAD ── */
+/* ── INE / FOTO UPLOAD ── */
 .ine-section {
   margin-top: 18px;
   padding: 18px;
@@ -209,6 +209,9 @@ input:focus, select:focus { outline: none; border-color: var(--blue); background
 .ine-status.warn { color: #f59e0b; }
 .ine-status.err  { color: var(--red); }
 
+/* drop-zone de una sola columna (cuenta) */
+.drop-zone-single { max-width: 320px; }
+
 #uploadProgress { display: none; margin-top: 12px; }
 #uploadProgress .prog-label { font-size: 13px; font-weight: 700; margin-bottom: 5px; color: var(--muted); }
 #uploadTrack { background: #e5e7eb; height: 10px; border-radius: 8px; overflow: hidden; }
@@ -262,10 +265,9 @@ input:focus, select:focus { outline: none; border-color: var(--blue); background
       <div class="ine-slot">
         <label>Frente (lado con foto)</label>
         <div class="drop-zone" id="dzFrente">
-          <!-- SIN capture="environment" → el celular pregunta: cámara o galería -->
           <input type="file" id="ineFrente" accept="image/*">
           <img class="preview-img" id="prevFrente" alt="Vista previa frente INE">
-          <button class="clear-btn" type="button" data-target="ineFrente" data-prev="prevFrente" data-dz="dzFrente">✕</button>
+          <button class="clear-btn" type="button" data-target="ineFrente" data-prev="prevFrente" data-dz="dzFrente" data-st="stFrente">✕</button>
           <div class="dz-icon">📷</div>
           <div class="dz-label">Frente del INE</div>
           <div class="dz-hint">Toca para foto o galería · Arrastra aquí</div>
@@ -275,10 +277,9 @@ input:focus, select:focus { outline: none; border-color: var(--blue); background
       <div class="ine-slot">
         <label>Reverso (lado con código)</label>
         <div class="drop-zone" id="dzReverso">
-          <!-- SIN capture="environment" → el celular pregunta: cámara o galería -->
           <input type="file" id="ineReverso" accept="image/*">
           <img class="preview-img" id="prevReverso" alt="Vista previa reverso INE">
-          <button class="clear-btn" type="button" data-target="ineReverso" data-prev="prevReverso" data-dz="dzReverso">✕</button>
+          <button class="clear-btn" type="button" data-target="ineReverso" data-prev="prevReverso" data-dz="dzReverso" data-st="stReverso">✕</button>
           <div class="dz-icon">📷</div>
           <div class="dz-label">Reverso del INE</div>
           <div class="dz-hint">Toca para foto o galería · Arrastra aquí</div>
@@ -286,6 +287,23 @@ input:focus, select:focus { outline: none; border-color: var(--blue); background
         <div class="ine-status warn" id="stReverso">Sin foto</div>
       </div>
     </div>
+  </div>
+
+  <!-- NÚMERO DE CUENTA -->
+  <div class="section-divider">Cuenta bancaria del referido</div>
+  <div class="ine-section">
+    <div class="ine-section-title">
+      🏦 Cuenta bancaria <span class="badge">Requerido</span>
+    </div>
+    <div class="drop-zone drop-zone-single" id="dzCuenta">
+      <input type="file" id="fotoCuenta" accept="image/*">
+      <img class="preview-img" id="prevCuenta" alt="Vista previa número de cuenta">
+      <button class="clear-btn" type="button" data-target="fotoCuenta" data-prev="prevCuenta" data-dz="dzCuenta" data-st="stCuenta">✕</button>
+      <div class="dz-icon">🏦</div>
+      <div class="dz-label">Cuenta bancaria</div>
+      <div class="dz-hint">Toca para foto o galería · Arrastra aquí</div>
+    </div>
+    <div class="ine-status warn" id="stCuenta">Sin foto</div>
   </div>
 
   <!-- UBICACIÓN -->
@@ -379,9 +397,9 @@ input:focus, select:focus { outline: none; border-color: var(--blue); background
 </form>
 
 <script>
-// ── REEMPLAZA CON TU URL DE WEB APP ──────────────────────────────
-const GOOGLE_WEBAPP = "https://script.google.com/macros/s/AKfycbys7qARtjuBASTk5IVfcFxin_kf2LgvnXi4kk5OSIyEkTO9pWCAwokngb6QPjPx6VZe/exec";
-// ─────────────────────────────────────────────────────────────────
+// ── URL DE WEB APP ──────────────────────────────────────────────
+const GOOGLE_WEBAPP = "https://script.google.com/macros/s/AKfycbwE_XhGDT57Pb1hiYYkMUolZZg4A07_bsLPuRgG9yCKqfnzbg029x-DTKyZCEgJXqkr/exec";
+// ───────────────────────────────────────────────────────────────
 
 /* ══════════════════════════════════════════════
    AUTOCOMPLETADO GENÉRICO
@@ -398,7 +416,7 @@ function crearAutocompletado(inputId, listId, datos) {
   }
 
   function mostrar(query) {
-    const q        = query.trim().toLowerCase();
+    const q         = query.trim().toLowerCase();
     const filtrados = q ? datos.filter(d => d.toLowerCase().includes(q)) : datos;
     lista.innerHTML = '';
     idxActivo = -1;
@@ -409,11 +427,7 @@ function crearAutocompletado(inputId, listId, datos) {
         const div = document.createElement('div');
         div.className = 'autocomplete-item';
         div.innerHTML = resaltar(item, query.trim());
-        div.addEventListener('mousedown', e => {
-          e.preventDefault();
-          input.value = item;
-          cerrar();
-        });
+        div.addEventListener('mousedown', e => { e.preventDefault(); input.value = item; cerrar(); });
         lista.appendChild(div);
       });
     }
@@ -425,38 +439,22 @@ function crearAutocompletado(inputId, listId, datos) {
   input.addEventListener('focus', () => mostrar(input.value));
   input.addEventListener('input', () => mostrar(input.value));
   input.addEventListener('blur',  () => setTimeout(cerrar, 150));
-
   input.addEventListener('keydown', e => {
     const items = lista.querySelectorAll('.autocomplete-item');
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      idxActivo = Math.min(idxActivo + 1, items.length - 1);
-      items.forEach((el, i) => el.classList.toggle('active', i === idxActivo));
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      idxActivo = Math.max(idxActivo - 1, 0);
-      items.forEach((el, i) => el.classList.toggle('active', i === idxActivo));
-    } else if (e.key === 'Enter' && idxActivo >= 0) {
-      e.preventDefault();
-      input.value = items[idxActivo].textContent;
-      cerrar();
-    } else if (e.key === 'Escape') {
-      cerrar();
-    }
+    if (e.key === 'ArrowDown') { e.preventDefault(); idxActivo = Math.min(idxActivo+1, items.length-1); items.forEach((el,i)=>el.classList.toggle('active',i===idxActivo)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); idxActivo = Math.max(idxActivo-1, 0); items.forEach((el,i)=>el.classList.toggle('active',i===idxActivo)); }
+    else if (e.key === 'Enter' && idxActivo >= 0) { e.preventDefault(); input.value = items[idxActivo].textContent; cerrar(); }
+    else if (e.key === 'Escape') cerrar();
   });
-
-  document.addEventListener('click', e => {
-    if (!input.contains(e.target) && !lista.contains(e.target)) cerrar();
-  });
+  document.addEventListener('click', e => { if (!input.contains(e.target) && !lista.contains(e.target)) cerrar(); });
 }
 
 /* ══════════════════════════════════════════════
    CARGAR CATÁLOGOS CON JSONP (sin CORS)
    ══════════════════════════════════════════════ */
 function cargarCatalogos() {
-  const callbackName = 'jsonpCallback_' + Date.now();
-
-  window[callbackName] = function(data) {
+  const cbName = 'jsonpCb_' + Date.now();
+  window[cbName] = function(data) {
     document.getElementById('cargandoCatalogos').style.display = 'none';
     if (data.status === 'success') {
       crearAutocompletado('sucursal', 'listSucursal', data.tiendas);
@@ -467,27 +465,25 @@ function cargarCatalogos() {
       document.getElementById('cargandoCatalogos').textContent = '⚠️ Error al cargar catálogos. Escribe manualmente.';
       document.getElementById('cargandoCatalogos').style.display = 'block';
     }
-    delete window[callbackName];
+    delete window[cbName];
     const s = document.getElementById('jsonpScript');
     if (s) s.remove();
   };
-
   const script = document.createElement('script');
   script.id  = 'jsonpScript';
-  script.src = GOOGLE_WEBAPP + '?callback=' + callbackName;
-  script.onerror = function() {
+  script.src = GOOGLE_WEBAPP + '?callback=' + cbName;
+  script.onerror = () => {
     document.getElementById('cargandoCatalogos').textContent = '⚠️ No se pudieron cargar los catálogos. Escribe manualmente.';
     document.getElementById('listSucursal').innerHTML = '';
     document.getElementById('listPuesto').innerHTML   = '';
-    delete window[callbackName];
+    delete window[cbName];
   };
   document.body.appendChild(script);
 }
-
 cargarCatalogos();
 
 /* ══════════════════════════════════════════════
-   DROP ZONES — INE
+   DROP ZONES
    ══════════════════════════════════════════════ */
 function setupDropZone(inputId, previewId, dzId, statusId) {
   const input = document.getElementById(inputId);
@@ -511,8 +507,7 @@ function setupDropZone(inputId, previewId, dzId, statusId) {
   dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('dragover'); });
   dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
   dz.addEventListener('drop', e => {
-    e.preventDefault();
-    dz.classList.remove('dragover');
+    e.preventDefault(); dz.classList.remove('dragover');
     const file = e.dataTransfer.files[0];
     if (file) { input.files = e.dataTransfer.files; loadFile(file); }
   });
@@ -520,6 +515,7 @@ function setupDropZone(inputId, previewId, dzId, statusId) {
 
 setupDropZone('ineFrente',  'prevFrente',  'dzFrente',  'stFrente');
 setupDropZone('ineReverso', 'prevReverso', 'dzReverso', 'stReverso');
+setupDropZone('fotoCuenta', 'prevCuenta',  'dzCuenta',  'stCuenta');
 
 document.querySelectorAll('.clear-btn').forEach(btn => {
   btn.addEventListener('click', e => {
@@ -527,13 +523,9 @@ document.querySelectorAll('.clear-btn').forEach(btn => {
     const input = document.getElementById(btn.dataset.target);
     const prev  = document.getElementById(btn.dataset.prev);
     const dz    = document.getElementById(btn.dataset.dz);
-    const stId  = dz.id === 'dzFrente' ? 'stFrente' : 'stReverso';
-    const st    = document.getElementById(stId);
-    input.value = '';
-    prev.src = '';
-    dz.classList.remove('has-file');
-    st.textContent = 'Sin foto';
-    st.className = 'ine-status warn';
+    const st    = document.getElementById(btn.dataset.st);
+    input.value = ''; prev.src = ''; dz.classList.remove('has-file');
+    st.textContent = 'Sin foto'; st.className = 'ine-status warn';
   });
 });
 
@@ -551,8 +543,39 @@ function toBase64(file) {
   });
 }
 
+function fechaHoy() {
+  const hoy = new Date();
+  return hoy.toLocaleDateString('es-MX', { year:'numeric', month:'2-digit', day:'2-digit' });
+}
+
 function construirResumen(d) {
-  return `Hola Joins Us 👋 *${d.nombre_refiere}* acaba de referir a: *${d.nombre_referido}* que vive en *${d.estado}${d.ciudad_municipio ? ', ' + d.ciudad_municipio : ''}*. Se está refiriendo para *${d.sucursal}* como *${d.puesto}* Periodicidad *${d.periodicidad}* y esquema *${d.esquema}*, favor de llamarle al *${d.telefono1}*${d.telefono2 ? ' o al *' + d.telefono2 + '*' : ''}. Su folio de referido es *${d.folio}* 🧾`;
+  const linea = '═══════════════════════════════════';
+  return (
+`🤝 NUEVO REFERIDO — JOINS UP
+${linea}
+🧾 Folio:       ${d.folio}
+📅 Fecha:       ${fechaHoy()}
+${linea}
+👤 QUIEN REFIERE
+   Nombre:      ${d.nombre_refiere}
+
+👤 REFERIDO
+   Nombre:      ${d.nombre_referido}
+   📞 Tel 1:    ${d.telefono1}${d.telefono2 ? '\n   📞 Tel 2:    ' + d.telefono2 : ''}
+
+📍 UBICACIÓN
+   Estado:      ${d.estado || 'N/A'}
+   Ciudad:      ${d.ciudad_municipio || 'N/A'}
+
+💼 VACANTE
+   Sucursal:    ${d.sucursal}
+   Puesto:      ${d.puesto}
+   Periodicidad:${d.periodicidad || 'N/A'}
+   Esquema:     ${d.esquema || 'N/A'}
+${linea}
+📸 Evidencias: INE frente, INE reverso, Número de cuenta
+✅ Registrado en Google Sheets`
+  );
 }
 
 /* ══════════════════════════════════════════════
@@ -566,28 +589,33 @@ const folioValue = document.getElementById('folioValue');
 btnEnviar.onclick = async function () {
   const frenteFile  = document.getElementById('ineFrente').files[0];
   const reversoFile = document.getElementById('ineReverso').files[0];
+  const cuentaFile  = document.getElementById('fotoCuenta').files[0];
 
-  if (!vCampo('nombreRefiere')) { statusEl.className = 'err'; statusEl.textContent = '❌ Falta el nombre de quien refiere.'; return; }
-  if (!vCampo('nombreReferido')) { statusEl.className = 'err'; statusEl.textContent = '❌ Falta el nombre del referido.'; return; }
-  if (!vCampo('telefono1')) { statusEl.className = 'err'; statusEl.textContent = '❌ Falta el teléfono del referido.'; return; }
+  // Validaciones
+  if (!vCampo('nombreRefiere'))  { statusEl.className='err'; statusEl.textContent='❌ Falta el nombre de quien refiere.'; return; }
+  if (!vCampo('nombreReferido')) { statusEl.className='err'; statusEl.textContent='❌ Falta el nombre del referido.'; return; }
+  if (!vCampo('telefono1'))      { statusEl.className='err'; statusEl.textContent='❌ Falta el teléfono del referido.'; return; }
   if (!frenteFile) {
-    document.getElementById('stFrente').textContent = '⚠️ Requerido';
-    document.getElementById('stFrente').className = 'ine-status err';
-    statusEl.className = 'err'; statusEl.textContent = '❌ Falta el frente del INE del referido.'; return;
+    document.getElementById('stFrente').textContent='⚠️ Requerido'; document.getElementById('stFrente').className='ine-status err';
+    statusEl.className='err'; statusEl.textContent='❌ Falta el frente del INE.'; return;
   }
   if (!reversoFile) {
-    document.getElementById('stReverso').textContent = '⚠️ Requerido';
-    document.getElementById('stReverso').className = 'ine-status err';
-    statusEl.className = 'err'; statusEl.textContent = '❌ Falta el reverso del INE del referido.'; return;
+    document.getElementById('stReverso').textContent='⚠️ Requerido'; document.getElementById('stReverso').className='ine-status err';
+    statusEl.className='err'; statusEl.textContent='❌ Falta el reverso del INE.'; return;
   }
-  if (!vCampo('sucursal')) { statusEl.className = 'err'; statusEl.textContent = '❌ Falta la sucursal ofrecida.'; return; }
-  if (!vCampo('puesto'))   { statusEl.className = 'err'; statusEl.textContent = '❌ Falta el puesto ofrecido.'; return; }
+  if (!cuentaFile) {
+    document.getElementById('stCuenta').textContent='⚠️ Requerido'; document.getElementById('stCuenta').className='ine-status err';
+    statusEl.className='err'; statusEl.textContent='❌ Falta la foto del número de cuenta.'; return;
+  }
+  if (!vCampo('sucursal')) { statusEl.className='err'; statusEl.textContent='❌ Falta la sucursal ofrecida.'; return; }
+  if (!vCampo('puesto'))   { statusEl.className='err'; statusEl.textContent='❌ Falta el puesto ofrecido.'; return; }
 
   btnEnviar.disabled = true;
   statusEl.className = 'info';
-  statusEl.textContent = 'Preparando imágenes del INE…';
+  statusEl.textContent = 'Preparando imágenes…';
 
-  const archivos = [frenteFile, reversoFile];
+  const archivos = [frenteFile, reversoFile, cuentaFile];
+  const etiquetas = ['INE_frente', 'INE_reverso', 'Numero_cuenta'];
   const prog = document.getElementById('uploadProgress');
   const bar  = document.getElementById('uploadBar');
   const pct  = document.getElementById('uploadPct');
@@ -596,12 +624,8 @@ btnEnviar.onclick = async function () {
   const evidencias = [];
   for (let i = 0; i < archivos.length; i++) {
     const b64 = await toBase64(archivos[i]);
-    evidencias.push({
-      data:     b64.split(',')[1],
-      tipo:     archivos[i].type,
-      etiqueta: i === 0 ? 'INE_frente' : 'INE_reverso'
-    });
-    const p = Math.round(((i + 1) / archivos.length) * 100);
+    evidencias.push({ data: b64.split(',')[1], tipo: archivos[i].type, etiqueta: etiquetas[i] });
+    const p = Math.round(((i+1) / archivos.length) * 100);
     bar.style.width = p + '%';
     pct.textContent = p + '%';
   }
@@ -623,12 +647,7 @@ btnEnviar.onclick = async function () {
       evidencias:       evidencias
     };
 
-    const r = await fetch(GOOGLE_WEBAPP, {
-      method:   'POST',
-      redirect: 'follow',
-      body:     JSON.stringify(datos)
-    });
-
+    const r = await fetch(GOOGLE_WEBAPP, { method: 'POST', redirect: 'follow', body: JSON.stringify(datos) });
     const j = await r.json();
     if (j.status !== 'success') throw new Error(j.mensaje || 'Error del servidor');
 
