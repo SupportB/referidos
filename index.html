@@ -241,22 +241,22 @@ input:focus, select:focus { outline: none; border-color: var(--blue); background
 
   <!-- REFERIDO -->
   <div class="section-divider">Datos del referido</div>
-  <label>👤 Nombre completo del referido <span class="req">*</span></label>
+  <label>👤 Nombre completo de persona referida <span class="req">*</span></label>
   <input type="text" id="nombreReferido" placeholder="Nombre completo" required>
 
   <div class="row">
     <div>
-      <label>📞 Teléfono del referido 1 <span class="req">*</span></label>
+      <label>📞 Teléfono de persona referida 1 <span class="req">*</span></label>
       <input type="tel" id="telefono1" placeholder="10 dígitos" required>
     </div>
     <div>
-      <label>📞 Teléfono del referido 2</label>
+      <label>📞 Teléfono de persona referida 2</label>
       <input type="tel" id="telefono2" placeholder="Opcional">
     </div>
   </div>
 
   <!-- INE -->
-  <div class="section-divider">Identificación del referido</div>
+  <div class="section-divider">Identificación de persona referida</div>
   <div class="ine-section">
     <div class="ine-section-title">
       🪪 INE del referido <span class="badge">Requerido</span>
@@ -290,7 +290,7 @@ input:focus, select:focus { outline: none; border-color: var(--blue); background
   </div>
 
   <!-- NÚMERO DE CUENTA -->
-  <div class="section-divider">Cuenta bancaria del referido</div>
+  <div class="section-divider">Cuenta bancaria de persona referida</div>
   <div class="ine-section">
     <div class="ine-section-title">
       🏦 Cuenta bancaria <span class="badge">Requerido</span>
@@ -307,7 +307,7 @@ input:focus, select:focus { outline: none; border-color: var(--blue); background
   </div>
 
   <!-- UBICACIÓN -->
-  <div class="section-divider">Ubicación</div>
+  <div class="section-divider">Ubicación de persona referida</div>
   <div class="row">
     <div>
       <label>🗺️ Estado</label>
@@ -327,7 +327,7 @@ input:focus, select:focus { outline: none; border-color: var(--blue); background
       </select>
     </div>
     <div>
-      <label>🏙️ Ciudad / Municipio</label>
+      <label>🏙️ Ciudad / Municipio de persona referida</label>
       <input type="text" id="ciudadMunicipio" placeholder="Ciudad o municipio">
     </div>
   </div>
@@ -335,7 +335,7 @@ input:focus, select:focus { outline: none; border-color: var(--blue); background
   <!-- VACANTE -->
   <div class="section-divider">Detalles de la vacante</div>
 
-  <label>🏢 Sucursal ofrecida para tu referido <span class="req">*</span></label>
+  <label>🏢 Sucursal ofrecida a persona referida <span class="req">*</span></label>
   <div class="autocomplete-wrap">
     <input type="text" id="sucursal" placeholder="Escribe para buscar tienda…" autocomplete="off" required>
     <div class="autocomplete-list" id="listSucursal">
@@ -343,7 +343,7 @@ input:focus, select:focus { outline: none; border-color: var(--blue); background
     </div>
   </div>
 
-  <label>💼 Puesto ofrecido <span class="req">*</span></label>
+  <label>💼 Puesto ofrecido a persona referida <span class="req">*</span></label>
   <div class="autocomplete-wrap">
     <input type="text" id="puesto" placeholder="Escribe para buscar puesto…" autocomplete="off" required>
     <div class="autocomplete-list" id="listPuesto">
@@ -530,7 +530,7 @@ function fechaHoy() {
 function construirResumen(d) {
   const linea = '═══════════════════════════════════';
   return (
-`🤝 NUEVO REFERIDO — JOINS UP
+`🤝 NUEVO REFERIDO — JOINS US
 ${linea}
 🧾 Folio:       ${d.folio}
 📅 Fecha:       ${fechaHoy()}
