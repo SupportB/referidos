@@ -239,9 +239,9 @@ input:focus, select:focus { outline: none; border-color: var(--blue); background
 
     <div style="font-weight: 700; color: var(--text); margin-bottom: 6px;">✅ Obligatorios</div>
     <ul style="margin: 0 0 12px 18px; color: var(--text); line-height: 1.8;">
-      <li><strong>INE</strong> (frente y reverso) y vigente</li>
-      /strong> (frente y reverso) y vigente</li>Comprobante de domicilio</strong> <span style="color:var(--red);font-weight:600;">— vigencia no mayor a 3 meses</span></li>
-      <li><strong>Estado de cuenta bancario con datos visibles:</strong> nombre del trabajador, número de cuenta, clave interbancaria y fecha <span style="color:var(--red);font-weight:600;">— vigencia no mayor a 3 meses</span></li>
+      <li><strong>INE</strong> (frente y reverso) y vigente
+      <li><strong>Comprobante de domicilio</strong> <span style="color:var(--red);font-weight:600;">— vigencia no mayor a 3 meses</span></li>
+      <li><strong>Estado de cuenta bancario con datos visibles:</strong> nombre del trabajador, número de cuenta, clabe interbancaria y fecha <span style="color:var(--red);font-weight:600;">— vigencia no mayor a 3 meses</span></li>
     </ul>
 
     <div style="font-weight: 700; color: var(--text); margin-bottom: 6px;">📎 Opcionales <span style="font-:400;color:var(--muted);">(si aplica)</span></div>
@@ -329,22 +329,6 @@ input:focus, select:focus { outline: none; border-color: var(--blue); background
   <!-- DOCUMENTOS ADICIONALES -->
   <div class="section-divider">Documentos adicionales del referido</div>
 
-  <!-- CURP (Obligatorio) -->
-  <div class="ine-section">
-    <div class="ine-section-title">
-      📄 CURP <span class="badge">Requerido</span>
-    </div>
-    <div class="drop-zone drop-zone-single" id="dzCurp">
-      <input type="file" id="fotoCurp" accept="image/*">
-      <img class="preview-img" id="prevCurp" alt="Vista previa CURP">
-      <button class="clear-btn" type="button" data-target="fotoCurp" data-prev="prevCurp" data-dz="dzCurp" data-st="stCurp">✕</button>
-      <div class="dz-icon">📄</div>
-      <div class="dz-label">Foto del CURP</div>
-      <div class="dz-hint">Toca para foto o galería · Arrastra aquí</div>
-    </div>
-    <div class="ine-status warn" id="stCurp">Sin foto</div>
-  </div>
-
   <!-- CONSTANCIA FISCAL (Opcional) -->
   <div class="ine-section" style="margin-top:14px;">
     <div class="ine-section-title">
@@ -412,7 +396,7 @@ input:focus, select:focus { outline: none; border-color: var(--blue); background
   <!-- IMSS (Si aplica) -->
   <div class="ine-section" style="margin-top:14px;">
     <div class="ine-section-title">
-      🏥 IMSS <span class="badge" style="background:var(--muted);">Si aplica</span>
+      🏥 Numero seguro social <span class="badge" style="background:var(--muted);">Si aplica</span>
     </div>
     <div class="drop-zone drop-zone-single" id="dzImss">
       <input type="file" id="fotoImss" accept="image/*">
@@ -496,7 +480,7 @@ input:focus, select:focus { outline: none; border-color: var(--blue); background
 
 <script>
 // ── URL DE WEB APP ──────────────────────────────────────────────
-const GOOGLE_WEBAPP = "https://script.google.com/macros/s/AKfycbxuKN5qrnW-12tK_-JvVLT2kwkB4y1pE2Ty8hy15jIWxYNZroE_D2F7PoIlVrDrtyYO/exec";
+const GOOGLE_WEBAPP = "https://script.google.com/macros/s/AKfycbyibWgujDBLuEu_qmXjV7j606s-d3Wg120T5RGG6_uOuA6t-7-BLYMVElcdnMBGX6X8/exec";
 // ───────────────────────────────────────────────────────────────
 
 /* ══════════════════════════════════════════════
@@ -614,7 +598,6 @@ function setupDropZone(inputId, previewId, dzId, statusId) {
 setupDropZone('ineFrente',       'prevFrente',       'dzFrente',       'stFrente');
 setupDropZone('ineReverso',      'prevReverso',      'dzReverso',      'stReverso');
 setupDropZone('fotoCuenta',      'prevCuenta',       'dzCuenta',       'stCuenta');
-setupDropZone('fotoCurp',        'prevCurp',         'dzCurp',         'stCurp');
 setupDropZone('fotoFiscal',      'prevFiscal',       'dzFiscal',       'stFiscal');
 setupDropZone('fotoLicencia',    'prevLicencia',     'dzLicencia',     'stLicencia');
 setupDropZone('fotoCirculacion', 'prevCirculacion',  'dzCirculacion',  'stCirculacion');
@@ -675,7 +658,7 @@ ${linea}
    Sucursal:    ${d.sucursal}
    Puesto:      ${d.puesto}
 ${linea}
-📸 Documentos: INE frente, INE reverso, Número de cuenta, CURP, Comprobante de domicilio (+ opcionales si adjuntados)
+📸 Documentos: INE frente, INE reverso, Número de cuenta, Comprobante de domicilio (+ opcionales si adjuntados)
 ✅ Registrado en Google Sheets`
   );
 }
@@ -692,7 +675,6 @@ btnEnviar.onclick = async function () {
   const frenteFile       = document.getElementById('ineFrente').files[0];
   const reversoFile      = document.getElementById('ineReverso').files[0];
   const cuentaFile       = document.getElementById('fotoCuenta').files[0];
-  const curpFile         = document.getElementById('fotoCurp').files[0];
   const fiscalFile       = document.getElementById('fotoFiscal').files[0];
   const licenciaFile     = document.getElementById('fotoLicencia').files[0];
   const circulacionFile  = document.getElementById('fotoCirculacion').files[0];
@@ -715,10 +697,6 @@ btnEnviar.onclick = async function () {
     document.getElementById('stCuenta').textContent='⚠️ Requerido'; document.getElementById('stCuenta').className='ine-status err';
     statusEl.className='err'; statusEl.textContent='❌ Falta la foto del número de cuenta.'; return;
   }
-  if (!curpFile) {
-    document.getElementById('stCurp').textContent='⚠️ Requerido'; document.getElementById('stCurp').className='ine-status err';
-    statusEl.className='err'; statusEl.textContent='❌ Falta la foto del CURP.'; return;
-  }
   if (!comprobanteFile) {
     document.getElementById('stComprobante').textContent='⚠️ Requerido'; document.getElementById('stComprobante').className='ine-status err';
     statusEl.className='err'; statusEl.textContent='❌ Falta el comprobante de domicilio.'; return;
@@ -731,8 +709,8 @@ btnEnviar.onclick = async function () {
   statusEl.textContent = 'Preparando imágenes…';
 
   // Obligatorios siempre
-  const archivos  = [frenteFile, reversoFile, cuentaFile, curpFile, comprobanteFile];
-  const etiquetas = ['INE_frente', 'INE_reverso', 'Numero_cuenta', 'CURP', 'Comprobante_domicilio'];
+  const archivos  = [frenteFile, reversoFile, cuentaFile, comprobanteFile];
+  const etiquetas = ['INE_frente', 'INE_reverso', 'Numero_cuenta', 'Comprobante_domicilio'];
   // Opcionales — solo si el usuario los adjuntó
   if (fiscalFile)      { archivos.push(fiscalFile);      etiquetas.push('Constancia_fiscal'); }
   if (licenciaFile)    { archivos.push(licenciaFile);    etiquetas.push('Licencia_conducir'); }
