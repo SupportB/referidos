@@ -267,11 +267,11 @@ input:focus, select:focus { outline: none; border-color: var(--blue); background
   <div class="row">
     <div>
       <label>📞 Teléfono de persona referida 1 <span class="req">*</span></label>
-      <input type="tel" id="telefono1" placeholder="10 dígitos" required>
+      <input type="tel" id="telefono1" placeholder="10 dígitos" required pattern="\d{10}" maxlength="10" inputmode="numeric">
     </div>
     <div>
       <label>📞 Teléfono de persona referida 2</label>
-      <input type="tel" id="telefono2" placeholder="Opcional">
+      <input type="tel" id="telefono2" placeholder="10 dígitos (opcional)" pattern="\d{10}" maxlength="10" inputmode="numeric">
     </div>
   </div>
 
@@ -684,7 +684,9 @@ btnEnviar.onclick = async function () {
   // Validaciones
   if (!vCampo('nombreRefiere'))  { statusEl.className='err'; statusEl.textContent='❌ Falta el nombre de quien refiere.'; return; }
   if (!vCampo('nombreReferido')) { statusEl.className='err'; statusEl.textContent='❌ Falta el nombre del referido.'; return; }
-  if (!vCampo('telefono1'))      { statusEl.className='err'; statusEl.textContent='❌ Falta el teléfono del referido.'; return; }
+  if (!vCampo('telefono1'))      { statusEl.className='err'; statusEl.textContent='❌ Falta el Teléfono 1 del referido.'; return; }
+  if (!/^\d{10}$/.test(vCampo('telefono1'))) { statusEl.className='err'; statusEl.textContent='❌ Teléfono 1 debe tener exactamente 10 dígitos.'; return; }
+  if (vCampo('telefono2') && !/^\d{10}$/.test(vCampo('telefono2'))) { statusEl.className='err'; statusEl.textContent='❌ Teléfono 2 debe tener exactamente 10 dígitos.'; return; }
   if (!frenteFile) {
     document.getElementById('stFrente').textContent='⚠️ Requerido'; document.getElementById('stFrente').className='ine-status err';
     statusEl.className='err'; statusEl.textContent='❌ Falta el frente del INE.'; return;
