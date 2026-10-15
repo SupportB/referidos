@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <!-- ▼▼ VERSIÓN DE LA APP: cambia SOLO este número cada vez que subas una actualización ▼▼ -->
-<meta name="app-version" content="2026.10.14.3" />
+<meta name="app-version" content="2026.10.14.5" />
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <title>Formulario de Referidos</title>
@@ -572,6 +572,11 @@ input:focus, select:focus { outline: none; border-color: var(--blue); background
     <div id="vacantesAviso"></div>
     <div id="vacantesLista"></div>
     <div id="vacantesCartera"></div>
+    <div id="carteraSucursalWrap" style="display:none;">
+      <label for="sucursalCartera">🏬 ¿En qué sucursal deberá ser contemplado? <span class="req">*</span></label>
+      <input type="text" id="sucursalCartera" placeholder="Ej. Bodega Aurrera Taxqueña" autocomplete="off">
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;">Escribe el nombre de la sucursal donde se tomará en cuenta al referido.</div>
+    </div>
   </div>
 
   <!-- UBICACIÓN -->
@@ -653,7 +658,7 @@ input:focus, select:focus { outline: none; border-color: var(--blue); background
 
 <script>
 // ── URL DE WEB APP ──────────────────────────────────────────────
-const GOOGLE_WEBAPP = "https://script.google.com/macros/s/AKfycbymCzCBN9P3VllT4ftufboMfRdNk-a-wZgr_r8mdWAgl6ahDlPxE33tmG4MRvRpdl0I/exec";
+const GOOGLE_WEBAPP = "https://script.google.com/macros/s/AKfycbwxlZYuLrEcVdotlVVnxSrWudewGD6EliPd67Vydmgc_hDWemWES-AWMLuwUlzGooox/exec";
 
 // MODO PRUEBA: abrir el formulario con ?prueba=1 al final de la liga.
 // Las vacantes y puestos se consultan normal (solo lectura), pero al enviar NO se hace el POST a Sheets/Drive.
@@ -856,7 +861,8 @@ function fechaHoy() {
 
 function bloqueVacante(d) {
   // Solo el folio de la vacante (o CARTERA si no hay vacante que coincida)
-  return '   Folio de Vacante:  ' + (d.folio_vacante || 'N/A');
+  return '   Folio de Vacante:  ' + (d.folio_vacante || 'N/A') +
+         (d.folio_vacante === 'CARTERA' ? '\n   Sucursal (cartera): ' + (d.sucursal || 'N/A') : '');
 }
 
 function construirResumen(d) {
@@ -943,6 +949,10 @@ btnEnviar.onclick = async function () {
   }
   let esCartera = seleccion.tipo === 'cartera';
   if (esCartera && !vCampo('estado'))          { statusEl.className='err'; statusEl.textContent='❌ Selecciona el estado del referido.'; selEstado.focus(); return; }
+  if (esCartera && !vCampo('sucursalCartera')) {
+    statusEl.className='err'; statusEl.textContent='❌ Escribe en qué sucursal deberá ser contemplado el referido.';
+    document.getElementById('sucursalCartera').focus(); return;
+  }
   if (esCartera && !vCampo('ciudadMunicipio')) { statusEl.className='err'; statusEl.textContent='❌ Escribe la ciudad o municipio del referido.'; inpCiudad.focus(); return; }
 
   btnEnviar.disabled = true;
@@ -1013,7 +1023,8 @@ btnEnviar.onclick = async function () {
       estado:           vCampo('estado'),
       ciudad_municipio: vCampo('ciudadMunicipio'),
       folio_vacante:    esCartera ? 'CARTERA' : (vac.folio || seleccion.folio),
-      sucursal:         esCartera ? 'CARTERA' : (seleccion.sucursal || vac.sucursal || ''),
+      // En cartera, la sucursal es la que escribió el usuario (si la vacante se cubrió justo al enviar, se usa la de esa vacante)
+      sucursal:         esCartera ? (vCampo('sucursalCartera') || seleccion.sucursal || 'CARTERA') : (seleccion.sucursal || vac.sucursal || ''),
       puesto:           vCampo('puesto'),
       tipo_registro:    esCartera ? 'CARTERA' : 'VACANTE',
       estado_vacante:   esCartera ? '' : seleccion.estado,
@@ -1265,6 +1276,8 @@ function limpiarVacantes() {
   hidFolio.value = ''; hidSucursal.value = '';
   modoUbicacion('espera');
   vacantesBox.style.display = 'none';
+  document.getElementById('carteraSucursalWrap').style.display = 'none';
+  document.getElementById('sucursalCartera').value = '';
   vacantesTitulo.textContent = '';
   vacantesLista.textContent = '';
   vacantesCartera.textContent = '';
@@ -1277,6 +1290,7 @@ function seleccionar(sel) {
   modoUbicacion(sel.tipo === 'cartera' ? 'manual' : 'normal');
   hidFolio.value    = sel.tipo === 'cartera' ? 'CARTERA' : sel.folio;
   hidSucursal.value = sel.tipo === 'cartera' ? 'CARTERA' : (sel.sucursal || '');
+  document.getElementById('carteraSucursalWrap').style.display = sel.tipo === 'cartera' ? 'block' : 'none';
   pintarVacantes();
 }
 
